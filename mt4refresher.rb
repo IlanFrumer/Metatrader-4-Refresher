@@ -27,7 +27,7 @@ end
 
 SEARCH_TITLE = "MetaQuotes::MetaTrader::4.00"
 
-terminals = []
+terminals = 0
 
 title = FFI::MemoryPointer.new :char, 512
 class_title = FFI::MemoryPointer.new :char, 100
@@ -40,13 +40,13 @@ Win::EnumWindowCallback = Proc.new do |wnd, param|
 
   if SEARCH_TITLE  == class_title.read_string
 
-      terminal = {}
       title.clear
+      
+      (49408..49919).each do |lparam|
+          Win.post_message(wnd , 0x0000C106 , 0x0000303D, lparam)
+      end
 
-      terminal[:title] = Win.get_window_text(wnd, title, title.size)
-      terminal[:msg] = Win.post_message(wnd,0x0000C056, 0x0000303D, 0x0000C1D9)
-
-      terminals << terminal
+      terminals +=1
   end
 
   true
@@ -55,6 +55,5 @@ end
 unless Win.enum_desktop_windows(nil, Win::EnumWindowCallback, 0)
   puts 'Unable to enumerate current desktop\'s top-level windows'
 else
-  msgCount = terminals.select {|e| e[:msg]}.count
-  puts "Refreshed #{msgCount}/#{terminals.count} terminals"
+  puts "Refreshed #{terminals} terminals"
 end
